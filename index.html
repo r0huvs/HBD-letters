@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채아의 생일 축하 편지 🎂</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #000;
+      font-family: 'Apple SD Gothic Neo', sans-serif;
+    }
+
+    /* 슬라이드 컨테이너 */
+    .slide-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 개별 슬라이드 (기본은 숨김) */
+    .slide {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    /* 현재 보이는 슬라이드 */
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* 화면 비율에 맞게 전체 표시 */
+      user-select: none;
+    }
+
+    /* 2->3번 화면 이동 시 빙글빙글 회전 효과 */
+    .slide.spin-out {
+      animation: spinAndFade 1.2s forwards ease-in-out;
+    }
+
+    @keyframes spinAndFade {
+      0% {
+        opacity: 1;
+        transform: rotate(0deg) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: rotate(720deg) scale(0.1);
+      }
+    }
+
+    /* 1번 화면 빛 번짐 효과 (Ripple effect) */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,230,150,0.5) 40%, rgba(255,255,255,0) 70%);
+      transform: scale(0);
+      animation: rippleEffect 0.9s ease-out;
+      pointer-events: none;
+    }
+
+    @keyframes rippleEffect {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    /* 4번 화면 전용: 유리병 클릭 영역 (투명 버튼) */
+    #bottle-click-area {
+      position: absolute;
+      top: 60%;
+      left: 10%;
+      width: 20%;
+      height: 20%;
+      cursor: pointer;
+      z-index: 10;
+      /* 개발 중 위치 확인이 필요하면 아래 border주석을 해제하세요 */
+      /* border: 2px red dashed; */
+    }
+
+    /* 4번 화면 가이드 힌트 */
+    .hint-text {
+      position: absolute;
+      bottom: 50px;
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      pointer-events: none;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="slide-container">
+    <!-- 1페이지: 프랑스어 문구 -->
+    <div class="slide active" id="slide-1" onclick="handleSlide1Click(event)">
+      <img src="1.jpg" alt="Je vous souhaite sincèrement un joyeux anniversaire !">
+    </div>
+
+    <!-- 2페이지: HBD 1028 콜라주 -->
+    <div class="slide" id="slide-2" onclick="handleSlide2Click()">
+      <img src="KakaoTalk_20261026_173851843.jpg" alt="1028 HBD">
+    </div>
+
+    <!-- 3페이지: 스토리 (발에 무언가 툭!!) -->
+    <div class="slide" id="slide-3" onclick="nextSlide()">
+      <img src="KakaoTalk_20261026_175529075.jpg" alt="하와이 스토리">
+    </div>
+
+    <!-- 4페이지: 유리병 클릭 화면 -->
+    <div class="slide" id="slide-4" style="cursor: default;">
+      <img src="ff.jpg" alt="바닷가 유리병">
+      <!-- 유리병 위치에 겹치는 투명 클릭 영역 -->
+      <div id="bottle-click-area" onclick="nextSlide()"></div>
+      <div class="hint-text">🍾 떠내려온 유리병을 클릭해 보세요!</div>
+    </div>
+
+    <!-- 5페이지: 편지 1페이지 -->
+    <div class="slide" id="slide-5" onclick="nextSlide()">
+      <img src="11.jpg" alt="편지 1">
+    </div>
+
+    <!-- 6페이지: 편지 2페이지 -->
+    <div class="slide" id="slide-6" onclick="nextSlide()">
+      <img src="111.jpg" alt="편지 2">
+    </div>
+
+    <!-- 7페이지: 해변 돌아오기 -->
+    <div class="slide" id="slide-7" onclick="nextSlide()">
+      <img src="2.jpg" alt="해변 배경">
+    </div>
+
+    <!-- 8페이지: 마지막 엔딩 (감사합니다) -->
+    <div class="slide" id="slide-8">
+      <img src="22.jpg" alt="긴 편지 읽어주셔서 감사합니다">
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 8;
+
+    // 슬라이드 이동 함수
+    function goToSlide(slideIndex) {
+      const activeSlide = document.querySelector('.slide.active');
+      if (activeSlide) {
+        activeSlide.classList.remove('active');
+      }
+
+      const nextTarget = document.getElementById(`slide-${slideIndex}`);
+      if (nextTarget) {
+        nextTarget.classList.add('active');
+        currentSlide = slideIndex;
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        goToSlide(currentSlide + 1);
+      }
+    }
+
+    // 1번 화면: 빛 번짐 효과 후 이동
+    function handleSlide1Click(event) {
+      const slide1 = document.getElementById('slide-1');
+      
+      // 클릭 위치에 빛 번짐 요소를 생성
+      const ripple = document.createElement('div');
+      ripple.className = 'ripple';
+      
+      const size = Math.max(window.innerWidth, window.innerHeight);
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${event.clientX - size / 2}px`;
+      ripple.style.top = `${event.clientY - size / 2}px`;
+
+      slide1.appendChild(ripple);
+
+      // 빛 번짐 애니메이션 후 다음 슬라이드로 이동
+      setTimeout(() => {
+        nextSlide();
+        ripple.remove();
+      }, 700);
+    }
+
+    // 2번 화면: 빙글빙글 회전 효과 후 이동
+    function handleSlide2Click() {
+      const slide2 = document.getElementById('slide-2');
+      slide2.classList.add('spin-out');
+
+      setTimeout(() => {
+        slide2.classList.remove('spin-out');
+        nextSlide();
+      }, 1100);
+    }
+  </script>
+</body>
+</html>
